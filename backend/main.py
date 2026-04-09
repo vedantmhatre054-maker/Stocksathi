@@ -1,12 +1,12 @@
 from fastapi import FastAPI, Form
 from fastapi.responses import PlainTextResponse
 from parser import parse_message
-from db import create_table, update_stock, get_stock
+from mongo_db import update_stock, get_stock
 
 app = FastAPI()
 
 # Create DB table on start
-create_table()
+
 
 
 @app.get("/")

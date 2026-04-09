@@ -33,13 +33,13 @@ def parse_message(text):
     add_words = [
         "aaya", "aya", "added",
         "aala", "aali", "aale",   # Marathi
-        "aayi", "aaye"            # Hindi variants
+        "aayi", "aaye" ,"ALE"           # Hindi variants
     ]
 
     remove_words = [
         "gaya", "geli", "gele",   # Marathi
         "becha", "sold",
-        "gayi", "gaye"
+        "gayi", "gaye","GELE"
     ]
 
     # 🔥 FIRST CHECK REMOVE (IMPORTANT)
@@ -55,33 +55,14 @@ def parse_message(text):
                 action = "add"
                 break
 
-    # 🔥 ITEM MAP (MULTI-LANGUAGE)
-    item_map = {
-        # Tomato
-        "tomato": "tamatar",
-        "tamatar": "tamatar",
-        "tomatoo": "tamatar",
-        "batata": "aloo",
-        "टोमॅटो": "tamatar",
-        "टमाटर": "tamatar",
-
-        # Potato
-        "potato": "aloo",
-        "aloo": "aloo",
-        "batata": "aloo",
-        "आलू": "aloo",
-
-        # Maggi
-        "maggi": "maggi",
-
-        # Milk
-        "milk": "milk",
-        "doodh": "milk",
-    }
+   
+    # 🔥 AUTO ITEM DETECTION (GENERIC)
+    ignore_words = set(units_map.keys()) | set(add_words) | set(remove_words)
 
     for word in words:
-        if word in item_map:
-            item = item_map[word]
+        if not word.isdigit() and word not in ignore_words:
+            item = word
+            break
 
     return {
         "item": item,
