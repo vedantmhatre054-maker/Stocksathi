@@ -31,6 +31,7 @@ def update_stock(item, quantity, unit, action):
             "lastUpdated": datetime.now()
         })
 
+    # 🔥 Save transaction
     transactions_collection.insert_one({
         "type": "in" if action == "add" else "out",
         "quantity": quantity,

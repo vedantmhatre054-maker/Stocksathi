@@ -1,7 +1,10 @@
+from email import message
+
 from fastapi import FastAPI, Form
 from fastapi.responses import PlainTextResponse
-from parser import parse_message
+from nlp_engine import process_message
 from mongo_db import update_stock, get_stock
+
 
 app = FastAPI()
 
@@ -45,25 +48,30 @@ async def webhook(
         return PlainTextResponse(reply)
 
     # 🔥 UPDATE FLOW
-    parsed = parse_message(message)
+    parsed_list = process_message(message)
 
-    item = parsed.get("item")
-    quantity = parsed.get("quantity")
-    unit = parsed.get("unit")
-    action = parsed.get("action")
+    reply = ""
 
-    # ❌ Invalid input handling
-    if not item or not quantity or not action:
+    for parsed in parsed_list:
+        item = parsed.get("item")
+        quantity = parsed.get("quantity")
+        unit = parsed.get("unit")
+        action = parsed.get("action")
+
+        if not item or not quantity or not action:
+            continue
+
+        new_qty = update_stock(item, quantity, unit, action)
+
+        reply += f"✅ {item}: now {new_qty} {unit}\n"
+
+        if new_qty == 0:
+            reply += "🚨 Out of stock!\n"
+        elif new_qty < 5:
+            reply += "⚠️ Low stock! Order soon\n"
+
+    # ❌ If nothing valid parsed
+    if not reply:
         return PlainTextResponse("❌ Samajh nahi aaya, sahi format bhejo")
-
-    new_qty = update_stock(item, quantity, unit, action)
-
-    reply = f"✅ {item}: now {new_qty} {unit}"
-
-    # 🔥 ONLY ADDITION (NO CHANGE IN LOGIC)
-    if new_qty == 0:
-        reply += "\n🚨 Out of stock!"
-    elif new_qty < 5:
-        reply += "\n⚠️ Low stock! Order soon"
 
     return PlainTextResponse(reply)
